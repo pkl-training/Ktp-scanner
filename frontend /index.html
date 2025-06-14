@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+    <title>Scan KTP</title>
+      <style>
+          body { font-family: Arial, sans-serif; text-align: center; margin: 2em; }
+              video, canvas { width: 320px; height: auto; border: 1px solid #ccc; }
+                  pre { background: #f4f4f4; padding: 1em; text-align: left; max-width: 320px; margin: auto; }
+                    </style>
+                    </head>
+                    <body>
+                      <h2>Scan KTP Langsung</h2>
+                        <video id="video" autoplay></video><br>
+                          <button id="snap">Scan KTP</button>
+                            <h3>Hasil Ekstraksi:</h3>
+                              <pre id="output">Belum ada hasil</pre>
+                                <canvas id="canvas" style="display:none;"></canvas>
+
+                                  <script>
+                                      const video = document.getElementById("video"), 
+                                                canvas = document.getElementById("canvas"), 
+                                                          ctx = canvas.getContext("2d"), 
+                                                                    output = document.getElementById("output"),
+                                                                              snap = document.getElementById("snap");
+
+                                                                                  navigator.mediaDevices.getUserMedia({ video: true })
+                                                                                        .then(stream => video.srcObject = stream)
+                                                                                              .catch(e => alert("Tidak bisa akses kamera: " + e));
+
+                                                                                                  snap.onclick = async () => {
+                                                                                                        canvas.width = video.videoWidth;
+                                                                                                              canvas.height = video.videoHeight;
+                                                                                                                    ctx.drawImage(video, 0, 0);
+
+                                                                                                                          canvas.toBlob(async blob => {
+                                                                                                                                  const form = new FormData();
+                                                                                                                                          form.append("ktp", blob, "capture.jpg");
+
+                                                                                                                                                  const res = await fetch("http://localhost:5000/upload", {
+                                                                                                                                                            method: "POST", body: form
+                                                                                                                                                                    });
+
+                                                                                                                                                                            const data = await res.json();
+                                                                                                                                                                                    output.innerText = JSON.stringify(data, null, 2);
+                                                                                                                                                                                          }, "image/jpeg");
+                                                                                                                                                                                              };
+                                                                                                                                                                                                </script>
+                                                                                                                                                                                                </body>
+                                                                                                                                                                                                </html>
